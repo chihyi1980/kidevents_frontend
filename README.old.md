@@ -1,2 +1,0 @@
-# kidevents_frontend
-kidevents_frontend
