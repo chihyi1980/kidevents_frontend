@@ -2,10 +2,19 @@ import React from 'react';
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import "tabulator-tables/dist/css/tabulator_bootstrap5.min.css"; //import Tabulator stylesheet
+import "tabulator-tables/dist/css/tabulator_bootstrap5.min.css";
+import {
+  Button,
+} from '@mui/material'
+import EventAddnewDialog from './events/event-add-new-dialog';
 
 const EventsEdit = () => {
 
+  const [eventDialog, setEventDialog] = useState({ open: false, options: null });
+
+  const handleClickOpen = () => {
+    setEventDialog(prev => ({ ...prev, open: true}));
+  };
 
   useEffect(() => {
 
@@ -13,6 +22,11 @@ const EventsEdit = () => {
 
       const buttonFormatter = (cell, formatterParams, onRendered) => {
         let html = "<Button class='cell-btn'> photo </Button>";
+        return html;
+      }
+
+      const delButtonFormatter = (cell, formatterParams, onRendered) => {
+        let html = "<Button class='cell-btn'> delete </Button>";
         return html;
       }
 
@@ -25,11 +39,6 @@ const EventsEdit = () => {
       ];
 
       const cols = [
-        {
-          title: "ID",
-          field: "event_id",
-          width: 150
-        },
         {
           title: "活動名稱",
           field: "event_name",
@@ -74,14 +83,13 @@ const EventsEdit = () => {
           editor: "input",
           headerFilter: "input",
           cellEdited: function (cell) {
-          },          
+          },
           editable: true,
         },
         {
           title: "圖片",
           field: "event_pics",
           formatter: buttonFormatter,
-          width: 150
         },
         {
           title: "最小年齡",
@@ -142,6 +150,17 @@ const EventsEdit = () => {
           width: 150,
           editable: true,
         },
+        {
+          title: "刪除",
+          field: "delete",
+          formatter: delButtonFormatter,
+          width: 150
+        },
+        {
+          title: "ID",
+          field: "event_id",
+          width: 150
+        },
       ];
 
       const table = new Tabulator("#example-table", {
@@ -181,6 +200,30 @@ const EventsEdit = () => {
   return (
     <div>
       <h2>Events Edit</h2>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '20px',
+        boxSizing: 'border-box',
+        width: '100%'
+      }}>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleClickOpen}
+        >
+          ADD
+        </Button>
+
+        {eventDialog && eventDialog.open && (
+        <EventAddnewDialog
+          open={eventDialog.open}
+          onClose={() => setEventDialog(prev => ({ ...prev, open: false }))}
+        />
+      )}
+
+      </div>
+
       <div id="example-table"></div>
     </div>
   );
