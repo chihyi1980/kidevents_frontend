@@ -1,15 +1,18 @@
 import React from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import EventsEdit from './EventsEdit';
-import TagsEdit from './TagsEdit';
+import OptionsEdit from './OptionsEdit';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   React.useEffect(() => {
-    // 默认跳转到 events edit 页面
-    navigate('/dashboard/events');
-  }, [navigate]);
+    // 只在首次加载且路径为 '/dashboard' 时跳转到 events 页面
+    if (location.pathname === '/dashboard') {
+      navigate('/dashboard/events');
+    }
+  }, [navigate, location.pathname]);
 
   return (
     <div style={{ display: 'flex' }}>
@@ -19,14 +22,14 @@ const Dashboard = () => {
             <Link to="/dashboard/events">Events Edit</Link>
           </li>
           <li>
-            <Link to="/dashboard/tags">Tags Edit</Link>
+            <Link to="/dashboard/options">Options Edit</Link>
           </li>
         </ul>
       </nav>
       <div style={{ flex: 1, padding: '20px' }}>
         <Routes>
           <Route path="events" element={<EventsEdit />} />
-          <Route path="tags" element={<TagsEdit />} />
+          <Route path="options" element={<OptionsEdit />} />
         </Routes>
       </div>
     </div>
