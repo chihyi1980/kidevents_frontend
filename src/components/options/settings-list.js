@@ -204,6 +204,8 @@ const updateOrder = async (items, dataSource, isAdd = false) => {
         });
     });
 
+    console.log(newAry);
+
     await axios.put(`http://localhost:5000/api/${dataSource}/bulk-update`, newAry);
 
 }
