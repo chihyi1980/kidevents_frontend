@@ -11,12 +11,24 @@ import EventAddnewDialog from './events/event-add-new-dialog';
 const EventsEdit = () => {
 
   const [eventDialog, setEventDialog] = useState({ open: false, options: null });
+  const [locOptions, setLocOptions] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
 
   const handleClickOpen = () => {
     setEventDialog(prev => ({ ...prev, open: true}));
   };
 
   useEffect(() => {
+    const initOptions = async () => {
+      const loc_res = await axios.get('http://localhost:5000/api/loc/list');
+      const loc_options = loc_res.data;
+      setLocOptions(loc_options);
+
+      const tag_res = await axios.get('http://localhost:5000/api/tag/list');
+      const tag_options = tag_res.data;
+      setTagOptions(tag_options);
+
+    }
 
     const initTable = async () => {
 
@@ -193,7 +205,7 @@ const EventsEdit = () => {
       })
 
     }
-
+    initOptions();
     initTable();
   }, [])
 
@@ -219,6 +231,8 @@ const EventsEdit = () => {
         <EventAddnewDialog
           open={eventDialog.open}
           onClose={() => setEventDialog(prev => ({ ...prev, open: false }))}
+          locOptions={locOptions}
+          tagOptions={tagOptions}
         />
       )}
 
