@@ -8,16 +8,18 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateField } from '@mui/x-date-pickers/DateField';
+import dayjs from 'dayjs'; // Import dayjs
 
 import 'dayjs/locale/zh-cn';
+import axios from 'axios';
 
 const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
-
+    const today = dayjs(); // Get today's date
 
     const [newEvent, setNewEvent] = useState({
         event_name: '',
-        event_start_date: null,
-        event_end_date: null,
+        event_start_date: today,
+        event_end_date: today,
         event_min_age: 1,
         event_max_age: 20,
         event_loc: '',
@@ -32,7 +34,31 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
         const { name, value } = event.target;
         setNewEvent({...newEvent, [name]: value })
      };
-    const handleSubmit = (event) => { };
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        try {
+            // 从 localStorage 中获取 token
+            const token = localStorage.getItem('token');
+        
+            // 设置请求头
+            const config = {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            };
+        
+            const res = await axios.post('http://localhost:5000/api/events/create', newEvent, config);
+        
+            console.log('Data posted successfully:', res.data);
+          } catch (error) {
+            console.error('Error posting data:', error);
+            alert('Error posting data:', '請重新登入');
+          }
+
+        onClose();
+     };
     const handleClose = (event) => {
         onClose();
     };
