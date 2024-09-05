@@ -7,15 +7,26 @@ import {
   Button,
 } from '@mui/material'
 import EventAddnewDialog from './events/event-add-new-dialog';
+import dayjs from 'dayjs';
 
 const EventsEdit = () => {
 
   const [eventDialog, setEventDialog] = useState({ open: false, options: null });
   const [locOptions, setLocOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
+  const [table, setTable] = useState(null);
+  const COLOR_LIST = ['#FDAB3D', '#FCCCFF', '#FFCB00', '#00C875', '#2B76E5', '#0086C0', '#E2445C', '#9CD326', '#5559DF', '#5797FC', '#037F4C', '#FF642E', '#C4C4C4', '#4ECCC6', '#CAB641'];
+
+  const reloadTable = async () => {
+    if (table) {
+      const response = await axios.get('http://localhost:5000/api/events/list');
+      table.setData(response.data);  // 重新加载表格数据
+      console.log('reload!');
+    }
+  };
 
   const handleClickOpen = () => {
-    setEventDialog(prev => ({ ...prev, open: true}));
+    setEventDialog(prev => ({ ...prev, open: true }));
   };
 
   useEffect(() => {
@@ -29,8 +40,16 @@ const EventsEdit = () => {
       setTagOptions(tag_options);
 
     }
+    initOptions();
+  }, [])
+
+  useEffect(() => {
 
     const initTable = async () => {
+
+      const cellTextFormatter = (text, bgColor, color = '#FFFFFF') => {
+        return `<span class="cell-text" style="background-color:${bgColor}; color:${color};">${text}</span>`;
+      }
 
       const buttonFormatter = (cell, formatterParams, onRendered) => {
         let html = "<Button class='cell-btn'> photo </Button>";
@@ -42,13 +61,17 @@ const EventsEdit = () => {
         return html;
       }
 
-      const tabledata = [
-        { id: 1, name: "Oli Bob", age: "12", col: "red", dob: "" },
-        { id: 2, name: "Mary May", age: "1", col: "blue", dob: "14/05/1982" },
-        { id: 3, name: "Christine Lobowski", age: "42", col: "green", dob: "22/05/1982" },
-        { id: 4, name: "Brendon Philips", age: "125", col: "orange", dob: "01/08/1980" },
-        { id: 5, name: "Margret Marmajuke", age: "16", col: "yellow", dob: "31/01/1999" },
-      ];
+      const getList = (items) => {
+        let newList = [];
+        items.map((item) => (
+          newList.push({
+            value: item._id,
+            label: item.value
+          })
+        ));
+        return newList;
+
+      }
 
       const cols = [
         {
@@ -58,12 +81,11 @@ const EventsEdit = () => {
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          width: 150,
           editable: true,
         },
         {
           title: "開始時間",
-          field: "event_start_time",
+          field: "event_start_date",
           sorter: "date",
           editor: "input",
           headerFilter: "input",
@@ -72,12 +94,25 @@ const EventsEdit = () => {
             alignEmptyValues: "bottom",
           },
           cellEdited: function (cell) {
+          },
+          formatter: function (cell, formatterParams, onRendered) {
+            // 取得儲存格的值
+            var value = cell.getValue();
+
+            // 檢查值是否存在
+            if (value) {
+              // 使用 dayjs 格式化日期為 yy/MM/dddd
+              var formattedDate = dayjs(value).format('YYYY/MM/DD');
+              return formattedDate;
+            } else {
+              return "";
+            }
           },
           editable: true,
         },
         {
           title: "結束時間",
-          field: "event_end_time",
+          field: "event_end_date",
           sorter: "date",
           editor: "input",
           headerFilter: "input",
@@ -86,41 +121,137 @@ const EventsEdit = () => {
             alignEmptyValues: "bottom",
           },
           cellEdited: function (cell) {
+          },
+          formatter: function (cell, formatterParams, onRendered) {
+            // 取得儲存格的值
+            var value = cell.getValue();
+
+            // 檢查值是否存在
+            if (value) {
+              // 使用 dayjs 格式化日期為 yy/MM/dddd
+              var formattedDate = dayjs(value).format('YYYY/MM/DD');
+              return formattedDate;
+            } else {
+              return "";
+            }
           },
           editable: true,
         },
         {
           title: "地點",
           field: "event_loc",
-          editor: "input",
-          headerFilter: "input",
-          cellEdited: function (cell) {
+          editor: "list",
+          headerFilter: true,
+          headerFilterFunc: "in",
+          headerFilterParams: {
+            multiselect: true,
+            values: getList(locOptions)
           },
-          editable: true,
+
+          cellEdited: function (cell) {
+
+          },
+          editorParams:
+          {
+            autocomplete: "true",
+            allowEmpty: true,
+            listOnEmpty: true,
+            valuesLookup: true,
+            values: getList(locOptions)
+          },
+          formatter: (cell) => {
+            let value = cell.getValue();
+            if (value) {
+
+              // 使用正則表達式提取所有數字
+              const numbers = value.match(/\d/g);
+
+              // 將提取出的數字轉換為整數並加總
+              const sum = numbers.reduce((acc, num) => acc + parseInt(num, 10), 0);
+
+              const num = sum % COLOR_LIST.length;
+
+              // 篩選出 locOptions 中 _id 等於 value 的項目
+              const matchedOption = locOptions.find(option => option._id === value);
+              // 確認是否找到匹配的項目
+              const text = matchedOption ? matchedOption.value : '';
+
+              const bgColor = COLOR_LIST[num];
+              return cellTextFormatter(text, bgColor, '#FFFFFF')
+            } else {
+              return '';
+            }
+          },
         },
         {
-          title: "圖片",
-          field: "event_pics",
-          formatter: buttonFormatter,
+          title: "活動類型",
+          field: "event_tag_ids",
+          editor: "list",
+          headerFilter: true,
+          headerFilterFunc: "in",
+          headerFilterParams: {
+            multiselect: true,
+            values: getList(tagOptions)
+          },
+
+          cellEdited: function (cell) {
+
+          },
+          editorParams:
+          {
+            autocomplete: "true",
+            allowEmpty: true,
+            listOnEmpty: true,
+            valuesLookup: true,
+            values: getList(tagOptions)
+          },
+          formatter: (cell) => {
+            const ids = cell.getValue();
+            let html = '';
+
+            if (ids?.length > 0) {
+              ids.forEach(id => {
+
+                // 使用正則表達式提取所有數字
+                const numbers = id.match(/\d/g);
+
+                // 將提取出的數字轉換為整數並加總
+                const sum = numbers.reduce((acc, num) => acc + parseInt(num, 10), 0);
+
+                const num = sum % COLOR_LIST.length;
+
+                // 篩選出 locOptions 中 _id 等於 value 的項目
+                const matchedOption = tagOptions.find(option => option._id === id);
+                // 確認是否找到匹配的項目
+                const text = matchedOption ? matchedOption.value : '';
+
+                const bgColor = COLOR_LIST[num];
+                html += cellTextFormatter(text, bgColor, '#FFFFFF');
+
+              });
+
+
+            }
+
+            return html;
+          },
         },
         {
           title: "最小年齡",
-          field: "event_age_start",
+          field: "event_min_age",
           editor: "input",
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          width: 150,
           editable: true,
         },
         {
           title: "最大年齡",
-          field: "event_age_end",
+          field: "event_max_age",
           editor: "input",
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          width: 150,
           editable: true,
         },
         {
@@ -130,28 +261,34 @@ const EventsEdit = () => {
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          width: 150,
           editable: true,
         },
         {
           title: "活動說明",
-          field: "event_desc",
+          field: "event_content",
           editor: "input",
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          width: 150,
+          width: 300,
           editable: true,
         },
-        {
-          title: "活動類型",
-          field: "event_link",
-          editor: "input",
-          cellEdited: function (cell) {
-          },
-          width: 150,
-          editable: true,
-        },
+        // {
+        //   title: "圖片",
+        //   field: "event_img",
+        //   formatter: function (cell, formatterParams, onRendered) {
+        //     // 取得儲存格的值
+        //     var value = cell.getValue();
+
+        //     // 檢查值是否存在
+        //     if (value) {
+        //       let html = "<img src=" + value + " width='300px'>";
+        //       return html;
+        //     } else {
+        //       return "";
+        //     }
+        //   },
+        // },
         {
           title: "活動連結",
           field: "event_link",
@@ -166,11 +303,10 @@ const EventsEdit = () => {
           title: "刪除",
           field: "delete",
           formatter: delButtonFormatter,
-          width: 150
         },
         {
           title: "ID",
-          field: "event_id",
+          field: "_id",
           width: 150
         },
       ];
@@ -181,33 +317,20 @@ const EventsEdit = () => {
         // height: window.innerHeight * 0.90,
         layoutColumnsOnNewData: true,
         layout: "fitDataFill",
-        rowHeight: 40,
+        // rowHeight: 40,
 
         pagination: "local",
         paginationSize: 100,
         paginationSizeSelector: [100, 150, 200],
         paginationCounter: "rows",
 
-        data: tabledata, //assign data to table
-
-        // ajaxURL: "/api/cars/list/sold",
-        // ajaxResponse: async (url, params, response) => {
-
-        //   let commentCount = [];
-        //   const comment_count_req = axios.get('/api/cars/comment/getCount');
-
-        //   await axios.all([comment_count_req]).then(axios.spread((...res) => {
-        //     commentCount = res[0].data;
-        //   }))
-
-        //   return buildTableData(response, commentCount, user);
-        // }
-      })
+        ajaxURL: "http://localhost:5000/api/events/list",
+      });
+      setTable(table);
 
     }
-    initOptions();
     initTable();
-  }, [])
+  }, [tagOptions])
 
   return (
     <div>
@@ -219,22 +342,25 @@ const EventsEdit = () => {
         boxSizing: 'border-box',
         width: '100%'
       }}>
-        <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           onClick={handleClickOpen}
         >
           ADD
         </Button>
 
         {eventDialog && eventDialog.open && (
-        <EventAddnewDialog
-          open={eventDialog.open}
-          onClose={() => setEventDialog(prev => ({ ...prev, open: false }))}
-          locOptions={locOptions}
-          tagOptions={tagOptions}
-        />
-      )}
+          <EventAddnewDialog
+            open={eventDialog.open}
+            onClose={() => {
+              setEventDialog(prev => ({ ...prev, open: false }));
+              reloadTable();
+            }}
+            locOptions={locOptions}
+            tagOptions={tagOptions}
+          />
+        )}
 
       </div>
 
