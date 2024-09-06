@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, TextField, Stack, OutlinedInput, 
+    Button, TextField, Stack, OutlinedInput,
     FormControl, InputLabel, Select, MenuItem, Autocomplete, Divider
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -14,7 +14,7 @@ import Checkbox from '@mui/material/Checkbox';
 import 'dayjs/locale/zh-cn';
 import axios from 'axios';
 
-const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
+const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) => {
     const today = dayjs(); // Get today's date
 
     const [newEvent, setNewEvent] = useState({
@@ -32,14 +32,49 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
         event_loc_detail: '',
     });
 
+    useEffect( async () => {
+        const response = await axios.get(`http://localhost:5000/api/event/${event_id}`);
+        const data = response.data;
+        
+        let updateEvent = data;
+        /*
+        updateEvent['event_name'] = data['event_name'];
+
+        updateEvent['event_min_age'] = data['event_min_age'];
+        updateEvent['event_max_age'] = data['event_max_age'];
+
+        updateEvent['event_loc'] = data['event_loc'];
+        updateEvent['event_tag'] = data['event_tag'];
+
+        updateEvent['event_price'] = data['event_price'];
+        updateEvent['event_link'] = data['event_link'];
+
+        updateEvent['event_content'] = data['event_content'];
+        updateEvent['event_img'] = data['event_img'];
+        updateEvent['event_loc_detail'] = data['event_loc_detail'];
+        */
+
+        // 将字符串日期转换为 dayjs 对象
+        updateEvent['event_start_date'] = dayjs(data['event_start_date']);
+        updateEvent['event_end_date'] = dayjs(data['event_end_date']);
+
+
+
+        console.log(data);
+
+        setNewEvent(updateEvent);
+
+    }, [event_id]);
+
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setNewEvent({ ...newEvent, [name]: value })
+
+        console.log('value', value);
+
+        setNewEvent({ ...newEvent, [name]: value })      
     };
 
-    
-
-    const handleSubmit = async (event) => {
+    const handleUpdate = async (event) => {
         event.preventDefault();
 
         try {
@@ -72,10 +107,10 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
             <Dialog open={open} fullWidth>
-                <DialogTitle>Event - Add New</DialogTitle>
+                <DialogTitle>Event - Update</DialogTitle>
                 <DialogContent>
                     <Stack direction='column' spacing={2} sx={{ mt: 1 }}>
-                        <TextField size='small' fullWidth label="活動名稱" name='event_name' onChange={handleChange} autoComplete='off' />
+                        <TextField size='small' fullWidth label="活動名稱" value={newEvent.event_name} name='event_name' onChange={handleChange} autoComplete='off' />
 
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
 
@@ -217,8 +252,8 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
 
                         <Stack direction='row' spacing={2}>
-                            <TextField size='small' fullWidth label="價格" name='event_price' onChange={handleChange} type="number" autoComplete='off' />
-                            <TextField size='small' fullWidth label="活動連結" name='event_link' onChange={handleChange} autoComplete='off' />
+                            <TextField size='small' fullWidth label="價格" name='event_price' value = {newEvent.event_price} onChange={handleChange} type="number" autoComplete='off' />
+                            <TextField size='small' fullWidth label="活動連結" name='event_link' value = {newEvent.event_link} onChange={handleChange} autoComplete='off' />
                         </Stack>
 
 
@@ -229,6 +264,7 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
                             fullWidth
                             label="活動內容"
                             name='event_content'
+                            value = {newEvent.event_content}
                             onChange={handleChange}
                             autoComplete='off'
                         />
@@ -241,6 +277,7 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
                             fullWidth
                             label="活動圖片，用逗號分隔多張圖片"
                             name='event_img'
+                            value = {newEvent.event_img}
                             onChange={handleChange}
                             autoComplete='off'
                         />
@@ -249,7 +286,7 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
                 </DialogContent>
                 <DialogActions>
                     <Button variant='text' onClick={handleClose}>Cancel</Button>
-                    <Button variant='contained' autoFocus onClick={handleSubmit}>Submit</Button>
+                    <Button variant='contained' autoFocus onClick={handleUpdate}>Update</Button>
                 </DialogActions>
             </Dialog>
         </LocalizationProvider>
@@ -257,5 +294,5 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
 
 }
 
-export default EventAddnewDialog;
+export default EventUpdateDialog;
 

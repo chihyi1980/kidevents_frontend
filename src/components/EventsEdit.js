@@ -7,11 +7,13 @@ import {
   Button,
 } from '@mui/material'
 import EventAddnewDialog from './events/event-add-new-dialog';
+import EventUpdateDialog from './events/event-update-dialog';
 import dayjs from 'dayjs';
 
 const EventsEdit = () => {
 
   const [eventDialog, setEventDialog] = useState({ open: false, options: null });
+  const [eventUpdateDialog, setEventUpdateDialog] = useState({ open: false, options: null });
   const [locOptions, setLocOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [table, setTable] = useState(null);
@@ -51,13 +53,13 @@ const EventsEdit = () => {
         return `<span class="cell-text" style="background-color:${bgColor}; color:${color};">${text}</span>`;
       }
 
-      const buttonFormatter = (cell, formatterParams, onRendered) => {
-        let html = "<Button class='cell-btn'> photo </Button>";
+      const editButtonFormatter = (cell, formatterParams, onRendered) => {
+        let html = "<Button class='cell-btn'> Edit </Button>";
         return html;
       }
 
       const delButtonFormatter = (cell, formatterParams, onRendered) => {
-        let html = "<Button class='cell-btn'> delete </Button>";
+        let html = "<Button class='cell-btn'> Delete </Button>";
         return html;
       }
 
@@ -75,13 +77,30 @@ const EventsEdit = () => {
 
       const cols = [
         {
+          title: "是否上架",
+          field: "is_online",
+          editor: "tickCross",
+          formatter: "tickCross",
+          hozAlign: "center",
+          cellEdited: function (cell) {
+          },
+          editable: true,
+        },
+        {
+          title: "編輯活動",
+          field: "edit_event",
+          formatter: editButtonFormatter,
+          cellClick: function (e, cell) {
+            const {_id} = cell.getData();
+            setEventUpdateDialog(prev => ({ ...prev, open: true, event_id: _id }));
+          },
+        },
+        {
           title: "活動名稱",
           field: "event_name",
           editor: "input",
           headerFilter: "input",
-          cellEdited: function (cell) {
-          },
-          editable: true,
+          editable: false,
         },
         {
           title: "開始時間",
@@ -108,7 +127,7 @@ const EventsEdit = () => {
               return "";
             }
           },
-          editable: true,
+          editable: false,
         },
         {
           title: "結束時間",
@@ -135,7 +154,7 @@ const EventsEdit = () => {
               return "";
             }
           },
-          editable: true,
+          editable: false,
         },
         {
           title: "地點",
@@ -182,6 +201,7 @@ const EventsEdit = () => {
               return '';
             }
           },
+          editable: false,
         },
         {
           title: "活動類型",
@@ -229,12 +249,10 @@ const EventsEdit = () => {
                 html += cellTextFormatter(text, bgColor, '#FFFFFF');
 
               });
-
-
             }
-
             return html;
           },
+          editable: false,
         },
         {
           title: "最小年齡",
@@ -243,7 +261,7 @@ const EventsEdit = () => {
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          editable: true,
+          editable: false,
         },
         {
           title: "最大年齡",
@@ -252,7 +270,7 @@ const EventsEdit = () => {
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          editable: true,
+          editable: false,
         },
         {
           title: "價格",
@@ -261,7 +279,7 @@ const EventsEdit = () => {
           headerFilter: "input",
           cellEdited: function (cell) {
           },
-          editable: true,
+          editable: false,
         },
         {
           title: "活動說明",
@@ -271,7 +289,7 @@ const EventsEdit = () => {
           cellEdited: function (cell) {
           },
           width: 300,
-          editable: true,
+          editable: false,
         },
         // {
         //   title: "圖片",
@@ -297,17 +315,17 @@ const EventsEdit = () => {
           cellEdited: function (cell) {
           },
           width: 150,
-          editable: true,
-        },
-        {
-          title: "刪除",
-          field: "delete",
-          formatter: delButtonFormatter,
+          editable: false,
         },
         {
           title: "ID",
           field: "_id",
           width: 150
+        },        
+        {
+          title: "刪除",
+          field: "delete",
+          formatter: delButtonFormatter,
         },
       ];
 
@@ -359,6 +377,19 @@ const EventsEdit = () => {
             }}
             locOptions={locOptions}
             tagOptions={tagOptions}
+          />
+        )}
+
+        {eventUpdateDialog && eventUpdateDialog.open && (
+          <EventUpdateDialog
+            open={eventUpdateDialog.open}
+            onClose={() => {
+              setEventUpdateDialog(prev => ({ ...prev, open: false }));
+              reloadTable();
+            }}
+            locOptions={locOptions}
+            tagOptions={tagOptions}
+            event_id = {eventUpdateDialog.event_id}
           />
         )}
 
