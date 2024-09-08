@@ -82,7 +82,34 @@ const EventsEdit = () => {
           editor: "tickCross",
           formatter: "tickCross",
           hozAlign: "center",
-          cellEdited: function (cell) {
+          cellEdited: async function (cell) {
+
+            const is_online = cell.getValue();
+            const { _id } = cell.getData();
+
+            try {
+              // 从 localStorage 中获取 token
+              const token = localStorage.getItem('token');
+
+              // 设置请求头
+              const config = {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              };
+
+              let newEvent = {};
+              newEvent['is_online'] = is_online;
+
+              const res = await axios.put(`http://localhost:5000/api/events/${_id}`, newEvent, config);
+
+              console.log('Data put successfully:', res.data);
+            } catch (error) {
+              console.error('Error put data:', error);
+              alert('Error put data:', '請重新登入');
+            }
+
           },
           editable: true,
         },
@@ -91,7 +118,7 @@ const EventsEdit = () => {
           field: "edit_event",
           formatter: editButtonFormatter,
           cellClick: function (e, cell) {
-            const {_id} = cell.getData();
+            const { _id } = cell.getData();
             setEventUpdateDialog(prev => ({ ...prev, open: true, event_id: _id }));
           },
         },
@@ -321,11 +348,45 @@ const EventsEdit = () => {
           title: "ID",
           field: "_id",
           width: 150
-        },        
+        },
         {
           title: "刪除",
           field: "delete",
           formatter: delButtonFormatter,
+          cellClick: async function (e, cell) {
+            const { event_name, _id } = cell.getData();
+            let text = `是否確定刪除活動 : ${event_name} ?`;
+
+            // 禁用 ESLint 对于 'confirm' 的警告
+            // eslint-disable-next-line no-restricted-globals
+            if (confirm(text) == true) {
+              const row = cell.getRow();
+              row.delete();
+
+              try {
+                // 从 localStorage 中获取 token
+                const token = localStorage.getItem('token');
+
+                // 设置请求头
+                const config = {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                };
+
+                let newEvent = {};
+                newEvent['is_enabled'] = false;
+
+                const res = await axios.put(`http://localhost:5000/api/events/${_id}`, newEvent, config);
+
+                console.log('Data put successfully:', res.data);
+              } catch (error) {
+                console.error('Error put data:', error);
+                alert('Error put data:', '請重新登入');
+              }
+            }
+          },
         },
       ];
 
@@ -389,7 +450,7 @@ const EventsEdit = () => {
             }}
             locOptions={locOptions}
             tagOptions={tagOptions}
-            event_id = {eventUpdateDialog.event_id}
+            event_id={eventUpdateDialog.event_id}
           />
         )}
 

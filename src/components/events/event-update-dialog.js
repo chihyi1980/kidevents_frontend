@@ -32,46 +32,34 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
         event_loc_detail: '',
     });
 
-    useEffect( async () => {
-        const response = await axios.get(`http://localhost:5000/api/event/${event_id}`);
-        const data = response.data;
-        
-        let updateEvent = data;
-        /*
-        updateEvent['event_name'] = data['event_name'];
+    useEffect(() => {
+        // 定义一个异步函数
+        const fetchEventData = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/event/${event_id}`);
+                const data = response.data;
 
-        updateEvent['event_min_age'] = data['event_min_age'];
-        updateEvent['event_max_age'] = data['event_max_age'];
+                let updateEvent = { ...data };
+                // 将字符串日期转换为 dayjs 对象
+                updateEvent['event_start_date'] = dayjs(data['event_start_date']);
+                updateEvent['event_end_date'] = dayjs(data['event_end_date']);
 
-        updateEvent['event_loc'] = data['event_loc'];
-        updateEvent['event_tag'] = data['event_tag'];
+                setNewEvent(updateEvent);
+            } catch (error) {
+                console.error("Failed to fetch event data", error);
+            }
+        };
 
-        updateEvent['event_price'] = data['event_price'];
-        updateEvent['event_link'] = data['event_link'];
+        // 仅当 dialog 打开时调用
+        if (open) {
+            fetchEventData();
+        }
 
-        updateEvent['event_content'] = data['event_content'];
-        updateEvent['event_img'] = data['event_img'];
-        updateEvent['event_loc_detail'] = data['event_loc_detail'];
-        */
-
-        // 将字符串日期转换为 dayjs 对象
-        updateEvent['event_start_date'] = dayjs(data['event_start_date']);
-        updateEvent['event_end_date'] = dayjs(data['event_end_date']);
-
-
-
-        console.log(data);
-
-        setNewEvent(updateEvent);
-
-    }, [event_id]);
+    }, [event_id, open]);  // 添加 open 作为依赖项，确保在对话框打开时加载数据
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-
-        console.log('value', value);
-
-        setNewEvent({ ...newEvent, [name]: value })      
+        setNewEvent({ ...newEvent, [name]: value })
     };
 
     const handleUpdate = async (event) => {
@@ -89,12 +77,14 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                 }
             };
 
-            const res = await axios.post('http://localhost:5000/api/events/create', newEvent, config);
+            delete newEvent['_id'];
 
-            console.log('Data posted successfully:', res.data);
+            const res = await axios.put(`http://localhost:5000/api/events/${event_id}`, newEvent, config);
+
+            console.log('Data put successfully:', res.data);
         } catch (error) {
-            console.error('Error posting data:', error);
-            alert('Error posting data:', '請重新登入');
+            console.error('Error put data:', error);
+            alert('Error put data:', '請重新登入');
         }
 
         onClose();
@@ -216,10 +206,10 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                                     }
                                 </Select>
                             </FormControl>
-                            
+
                         </Stack>
                         <Stack direction='row' spacing={2}>
-                            <TextField size='small' fullWidth label="詳細地址" name='event_loc_detail' onChange={handleChange} autoComplete='off' />
+                            <TextField size='small' fullWidth label="詳細地址" name='event_loc_detail' value={newEvent.event_loc_detail || ''} onChange={handleChange} autoComplete='off' />
                         </Stack>
 
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
@@ -252,8 +242,8 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
 
                         <Stack direction='row' spacing={2}>
-                            <TextField size='small' fullWidth label="價格" name='event_price' value = {newEvent.event_price} onChange={handleChange} type="number" autoComplete='off' />
-                            <TextField size='small' fullWidth label="活動連結" name='event_link' value = {newEvent.event_link} onChange={handleChange} autoComplete='off' />
+                            <TextField size='small' fullWidth label="價格" name='event_price' value={newEvent.event_price} onChange={handleChange} type="number" autoComplete='off' />
+                            <TextField size='small' fullWidth label="活動連結" name='event_link' value={newEvent.event_link} onChange={handleChange} autoComplete='off' />
                         </Stack>
 
 
@@ -264,7 +254,7 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                             fullWidth
                             label="活動內容"
                             name='event_content'
-                            value = {newEvent.event_content}
+                            value={newEvent.event_content}
                             onChange={handleChange}
                             autoComplete='off'
                         />
@@ -277,7 +267,7 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                             fullWidth
                             label="活動圖片，用逗號分隔多張圖片"
                             name='event_img'
-                            value = {newEvent.event_img}
+                            value={newEvent.event_img}
                             onChange={handleChange}
                             autoComplete='off'
                         />

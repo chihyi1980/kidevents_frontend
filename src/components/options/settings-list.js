@@ -23,7 +23,7 @@ const OperationList = ({ title, dataSource, isDelete = true, isDnD = true, autoO
         const fetchData = async () => {
 
             const response = await axios.get(`http://localhost:5000/api/${dataSource}/list`);
-            const settings = response.data.filter(x => x.isEnable);
+            const settings = response.data;
          
             settings.map((x, index) => (
                 {
@@ -69,7 +69,6 @@ const OperationList = ({ title, dataSource, isDelete = true, isDnD = true, autoO
             value: title,
             // subValue: subTitle,
             order: 0,
-            isEnable: 1
             // autoOrder: autoOrder
         })
 
