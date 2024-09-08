@@ -3,11 +3,9 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import "tabulator-tables/dist/css/tabulator_bootstrap5.min.css";
-import {
-  Button,
-} from '@mui/material'
 import EventAddnewDialog from './events/event-add-new-dialog';
 import EventUpdateDialog from './events/event-update-dialog';
+import { Button, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import dayjs from 'dayjs';
 
 const EventsEdit = () => {
@@ -17,6 +15,8 @@ const EventsEdit = () => {
   const [locOptions, setLocOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [table, setTable] = useState(null);
+  const [imageDialog, setImageDialog] = useState({ open: false, imgUrl: '' });  // 管理图片对话框的状态
+
   const COLOR_LIST = ['#FDAB3D', '#FCCCFF', '#FFCB00', '#00C875', '#2B76E5', '#0086C0', '#E2445C', '#9CD326', '#5559DF', '#5797FC', '#037F4C', '#FF642E', '#C4C4C4', '#4ECCC6', '#CAB641'];
 
   const reloadTable = async () => {
@@ -29,6 +29,14 @@ const EventsEdit = () => {
 
   const handleClickOpen = () => {
     setEventDialog(prev => ({ ...prev, open: true }));
+  };
+
+  const handleImageClick = (imgUrl) => {
+    setImageDialog({ open: true, imgUrl });  // 打开图片对话框
+  };
+
+  const handleImageDialogClose = () => {
+    setImageDialog({ open: false, imgUrl: '' });  // 关闭图片对话框
   };
 
   useEffect(() => {
@@ -318,22 +326,28 @@ const EventsEdit = () => {
           width: 300,
           editable: false,
         },
-        // {
-        //   title: "圖片",
-        //   field: "event_img",
-        //   formatter: function (cell, formatterParams, onRendered) {
-        //     // 取得儲存格的值
-        //     var value = cell.getValue();
-
-        //     // 檢查值是否存在
-        //     if (value) {
-        //       let html = "<img src=" + value + " width='300px'>";
-        //       return html;
-        //     } else {
-        //       return "";
-        //     }
-        //   },
-        // },
+        {
+          title: "圖片",
+          field: "event_img",
+          formatter: function (cell, formatterParams, onRendered) {
+            let value = cell.getValue();
+            if (value) {
+              return `<button class="view-image-btn">查看圖片</button>`;
+            } else {
+              return "無圖片";
+            }
+          },
+          cellClick: function (e, cell) {
+            let imgUrl = cell.getValue();
+            if (imgUrl && imgUrl.indexOf(',') != -1) {
+              imgUrl = imgUrl.split(',')[0];
+              console.log(imgUrl);
+            }
+            if (imgUrl) {
+              handleImageClick(imgUrl);  // 打开图片对话框
+            }
+          },
+        },
         {
           title: "活動連結",
           field: "event_link",
@@ -457,6 +471,15 @@ const EventsEdit = () => {
       </div>
 
       <div id="example-table"></div>
+
+
+      <Dialog open={imageDialog.open} onClose={handleImageDialogClose}>
+        <DialogContent>
+          <img src={imageDialog.imgUrl} alt="活動圖片" style={{ width: '100%' }} />
+        </DialogContent>
+      </Dialog>
+
+
     </div>
   );
 };
