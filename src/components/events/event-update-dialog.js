@@ -31,12 +31,13 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
         event_img: '',
         event_loc_detail: '',
     });
+    const API_HOST = process.env.REACT_APP_API_HOST;
 
     useEffect(() => {
         // 定义一个异步函数
         const fetchEventData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/event/${event_id}`);
+                const response = await axios.get(`${API_HOST}/api/event/${event_id}`);
                 const data = response.data;
 
                 let updateEvent = { ...data };
@@ -79,7 +80,7 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
 
             delete newEvent['_id'];
 
-            const res = await axios.put(`http://localhost:5000/api/events/${event_id}`, newEvent, config);
+            const res = await axios.put(`${API_HOST}/api/events/${event_id}`, newEvent, config);
 
             console.log('Data put successfully:', res.data);
         } catch (error) {

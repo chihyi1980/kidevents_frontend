@@ -5,7 +5,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import "tabulator-tables/dist/css/tabulator_bootstrap5.min.css";
 import EventAddnewDialog from './events/event-add-new-dialog';
 import EventUpdateDialog from './events/event-update-dialog';
-import { Button, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { Button, Dialog, DialogContent } from '@mui/material';
 import dayjs from 'dayjs';
 
 const EventsEdit = () => {
@@ -16,12 +16,13 @@ const EventsEdit = () => {
   const [tagOptions, setTagOptions] = useState([]);
   const [table, setTable] = useState(null);
   const [imageDialog, setImageDialog] = useState({ open: false, imgUrl: '' });  // 管理图片对话框的状态
+  const API_HOST = process.env.REACT_APP_API_HOST;
 
   const COLOR_LIST = ['#FDAB3D', '#FCCCFF', '#FFCB00', '#00C875', '#2B76E5', '#0086C0', '#E2445C', '#9CD326', '#5559DF', '#5797FC', '#037F4C', '#FF642E', '#C4C4C4', '#4ECCC6', '#CAB641'];
 
   const reloadTable = async () => {
     if (table) {
-      const response = await axios.get('http://localhost:5000/api/events/list');
+      const response = await axios.get(`${API_HOST}/api/events/list`);
       table.setData(response.data);  // 重新加载表格数据
       console.log('reload!');
     }
@@ -41,11 +42,11 @@ const EventsEdit = () => {
 
   useEffect(() => {
     const initOptions = async () => {
-      const loc_res = await axios.get('http://localhost:5000/api/loc/list');
+      const loc_res = await axios.get(`${API_HOST}/api/loc/list`);
       const loc_options = loc_res.data;
       setLocOptions(loc_options);
 
-      const tag_res = await axios.get('http://localhost:5000/api/tag/list');
+      const tag_res = await axios.get(`${API_HOST}/api/tag/list`);
       const tag_options = tag_res.data;
       setTagOptions(tag_options);
 
@@ -110,7 +111,7 @@ const EventsEdit = () => {
               let newEvent = {};
               newEvent['is_online'] = is_online;
 
-              const res = await axios.put(`http://localhost:5000/api/events/${_id}`, newEvent, config);
+              const res = await axios.put(`${API_HOST}/api/events/${_id}`, newEvent, config);
 
               console.log('Data put successfully:', res.data);
             } catch (error) {
@@ -392,7 +393,7 @@ const EventsEdit = () => {
                 let newEvent = {};
                 newEvent['is_enabled'] = false;
 
-                const res = await axios.put(`http://localhost:5000/api/events/${_id}`, newEvent, config);
+                const res = await axios.put(`${API_HOST}/api/events/${_id}`, newEvent, config);
 
                 console.log('Data put successfully:', res.data);
               } catch (error) {
@@ -417,7 +418,7 @@ const EventsEdit = () => {
         paginationSizeSelector: [100, 150, 200],
         paginationCounter: "rows",
 
-        ajaxURL: "http://localhost:5000/api/events/list",
+        ajaxURL: `${API_HOST}/api/events/list`,
       });
       setTable(table);
 

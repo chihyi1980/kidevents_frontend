@@ -32,6 +32,8 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
         event_loc_detail: '',
     });
 
+    const API_HOST = process.env.REACT_APP_API_HOST;
+
     const handleChange = (event) => {
         const { name, value } = event.target;
         setNewEvent({ ...newEvent, [name]: value })
@@ -54,7 +56,7 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
                 }
             };
 
-            const res = await axios.post('http://localhost:5000/api/events/create', newEvent, config);
+            const res = await axios.post(`${API_HOST}/api/events/create`, newEvent, config);
 
             console.log('Data posted successfully:', res.data);
         } catch (error) {

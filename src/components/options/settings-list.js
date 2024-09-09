@@ -16,13 +16,14 @@ const OperationList = ({ title, dataSource, isDelete = true, isDnD = true, autoO
     const [formValue, setFormValue] = useState({
         title: '',
         subTitle: ''
-    })
+    });
+    const API_HOST = process.env.REACT_APP_API_HOST;
 
     useEffect(() => {
 
         const fetchData = async () => {
 
-            const response = await axios.get(`http://localhost:5000/api/${dataSource}/list`);
+            const response = await axios.get(`${API_HOST}/api/${dataSource}/list`);
             const settings = response.data;
          
             settings.map((x, index) => (
@@ -65,7 +66,7 @@ const OperationList = ({ title, dataSource, isDelete = true, isDnD = true, autoO
 
         // await updateOrder(settings, true);
 
-        await axios.post(`http://localhost:5000/api/${dataSource}/create`, {
+        await axios.post(`${API_HOST}/api/${dataSource}/create`, {
             value: title,
             // subValue: subTitle,
             order: 0,
@@ -87,9 +88,9 @@ const OperationList = ({ title, dataSource, isDelete = true, isDnD = true, autoO
 
     const handleDelete = async (item) => {
         let newItem = {...item};
-        newItem['isEnable'] = 0;
+        newItem['is_enabled'] = false;
         delete newItem['_id'];
-        await axios.put(`http://localhost:5000/api/${dataSource}/${item['_id']}`, newItem);
+        await axios.put(`${API_HOST}/api/${dataSource}/${item['_id']}`, newItem);
         setOpen(false);
         setReload(!reload);
     }
@@ -193,7 +194,7 @@ const ConfirmDialog = ({ open, handleClose, setting, confirmDelete }) => {
 }
 
 const updateOrder = async (items, dataSource, isAdd = false) => {
-
+    const API_HOST = process.env.REACT_APP_API_HOST;
     let newAry = [];
 
     items.map(async(item, index) => {
@@ -203,8 +204,6 @@ const updateOrder = async (items, dataSource, isAdd = false) => {
         });
     });
 
-    console.log(newAry);
-
-    await axios.put(`http://localhost:5000/api/${dataSource}/bulk-update`, newAry);
+    await axios.put(`${API_HOST}/api/${dataSource}/bulk-update`, newAry);
 
 }
