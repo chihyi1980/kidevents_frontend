@@ -219,7 +219,7 @@ const EventAddnewDialog = ({ open, onClose, locOptions, tagOptions }) => {
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
 
                         <Stack direction='row' spacing={2}>
-                            <TextField size='small' fullWidth label="價格" name='event_price' onChange={handleChange} type="number" autoComplete='off' />
+                            <TextField size='small' fullWidth label="價格" name='event_price' onChange={handleChange} autoComplete='off' />
                             <TextField size='small' fullWidth label="活動連結" name='event_link' onChange={handleChange} autoComplete='off' />
                         </Stack>
 

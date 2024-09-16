@@ -243,7 +243,7 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
 
                         <Stack direction='row' spacing={2}>
-                            <TextField size='small' fullWidth label="價格" name='event_price' value={newEvent.event_price} onChange={handleChange} type="number" autoComplete='off' />
+                            <TextField size='small' fullWidth label="價格" name='event_price' value={newEvent.event_price} onChange={handleChange} autoComplete='off' />
                             <TextField size='small' fullWidth label="活動連結" name='event_link' value={newEvent.event_link} onChange={handleChange} autoComplete='off' />
                         </Stack>
 
