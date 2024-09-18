@@ -139,6 +139,13 @@ const EventsEdit = () => {
           editable: false,
         },
         {
+          title: "活動單位",
+          field: "event_org",
+          editor: "input",
+          headerFilter: "input",
+          editable: false,
+        },
+        {
           title: "開始時間",
           field: "event_start_date",
           sorter: "date",

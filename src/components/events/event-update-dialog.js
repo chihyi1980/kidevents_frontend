@@ -30,6 +30,7 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
         event_content: '',
         event_img: '',
         event_loc_detail: '',
+        event_org: '',
     });
     const API_HOST = process.env.REACT_APP_API_HOST;
 
@@ -102,6 +103,8 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
                 <DialogContent>
                     <Stack direction='column' spacing={2} sx={{ mt: 1 }}>
                         <TextField size='small' fullWidth label="活動名稱" value={newEvent.event_name} name='event_name' onChange={handleChange} autoComplete='off' />
+
+                        <TextField size='small' fullWidth label="活動單位" value={newEvent.event_org} name='event_org' onChange={handleChange} autoComplete='off' />
 
                         <Divider sx={{ my: 2 }} /> {/* 分隔線 */}
 
