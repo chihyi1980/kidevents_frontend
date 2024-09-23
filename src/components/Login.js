@@ -8,6 +8,9 @@ const Login = () => {
   const navigate = useNavigate();
   const API_HOST = process.env.REACT_APP_API_HOST;
 
+  console.log('API Host:', process.env.REACT_APP_API_HOST);
+
+
   const handleLogin = async () => {
     try {
       const response = await axios.post(`${API_HOST}/api/login`, {

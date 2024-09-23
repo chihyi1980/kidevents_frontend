@@ -13,17 +13,18 @@ RUN npm install
 # 复制项目的所有文件
 COPY . .
 
-# 设置环境变量为 production，确保使用 .env.production 文件
+# 设置环境变量为生产模式
 ENV NODE_ENV=production
 
-# 构建 Next.js 项目
+# 构建生产版本
 RUN npm run build
 
-# 设置环境变量，Next.js 默认运行在 3000 端口
-ENV PORT=3000
+# 確保顯示 production
+RUN echo $NODE_ENV   
 
 # 暴露端口
 EXPOSE 3000
 
-# 启动 Next.js 应用
-CMD ["npm", "run", "start"]
+# 使用 serve 提供静态文件（而不是 react-scripts 开发服务器）
+RUN npm install -g serve
+CMD ["serve", "-s", "build", "-l", "3000"]
