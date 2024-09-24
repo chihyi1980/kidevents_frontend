@@ -438,7 +438,7 @@ const EventsEdit = () => {
       <h2>Events Edit</h2>
       <div style={{
         display: 'flex',
-        justifyContent: 'flex-end',
+        justifyContent: 'flex',
         padding: '20px',
         boxSizing: 'border-box',
         width: '100%'

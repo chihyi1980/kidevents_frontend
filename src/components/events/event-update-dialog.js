@@ -38,7 +38,7 @@ const EventUpdateDialog = ({ open, onClose, locOptions, tagOptions, event_id }) 
         // 定义一个异步函数
         const fetchEventData = async () => {
             try {
-                const response = await axios.get(`${API_HOST}/api/event/${event_id}`);
+                const response = await axios.get(`${API_HOST}/api/events/${event_id}`);
                 const data = response.data;
 
                 let updateEvent = { ...data };
