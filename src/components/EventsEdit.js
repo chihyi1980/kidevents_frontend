@@ -40,6 +40,10 @@ const EventsEdit = () => {
     setImageDialog({ open: false, imgUrl: '' });  // 关闭图片对话框
   };
 
+  const handleOpenNewWindow = (value) =>{
+    window.open(value, "_blank");
+  }
+
   useEffect(() => {
     const initOptions = async () => {
       const loc_res = await axios.get(`${API_HOST}/api/loc/list`);
@@ -137,6 +141,20 @@ const EventsEdit = () => {
           editor: "input",
           headerFilter: "input",
           editable: false,
+        },
+        {
+          title: "活動連結",
+          field: "event_link",
+          editor: "input",
+          headerFilter: "input",
+          editable: false,
+          formatter: function (cell, formatterParams, onRendered) {
+            let value = cell.getValue();
+            if (value) {
+              return `<button class='view-image-btn' onclick='window.open("${value}", "_blank")'>查看連結</button>`;
+            }
+            return "";
+          },
         },
         {
           title: "活動單位",
@@ -355,16 +373,6 @@ const EventsEdit = () => {
               handleImageClick(imgUrl);  // 打开图片对话框
             }
           },
-        },
-        {
-          title: "活動連結",
-          field: "event_link",
-          editor: "input",
-          headerFilter: "input",
-          cellEdited: function (cell) {
-          },
-          width: 150,
-          editable: false,
         },
         {
           title: "ID",
