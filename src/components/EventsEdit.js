@@ -157,6 +157,28 @@ const EventsEdit = () => {
           },
         },
         {
+          title: "圖片",
+          field: "event_img",
+          formatter: function (cell, formatterParams, onRendered) {
+            let value = cell.getValue();
+            if (value) {
+              return `<button class="view-image-btn">查看圖片</button>`;
+            } else {
+              return "無圖片";
+            }
+          },
+          cellClick: function (e, cell) {
+            let imgUrl = cell.getValue();
+            if (imgUrl && imgUrl.indexOf(',') != -1) {
+              imgUrl = imgUrl.split(',')[0];
+              console.log(imgUrl);
+            }
+            if (imgUrl) {
+              handleImageClick(imgUrl);  // 打开图片对话框
+            }
+          },
+        },
+        {
           title: "活動單位",
           field: "event_org",
           editor: "input",
@@ -351,28 +373,6 @@ const EventsEdit = () => {
           },
           width: 300,
           editable: false,
-        },
-        {
-          title: "圖片",
-          field: "event_img",
-          formatter: function (cell, formatterParams, onRendered) {
-            let value = cell.getValue();
-            if (value) {
-              return `<button class="view-image-btn">查看圖片</button>`;
-            } else {
-              return "無圖片";
-            }
-          },
-          cellClick: function (e, cell) {
-            let imgUrl = cell.getValue();
-            if (imgUrl && imgUrl.indexOf(',') != -1) {
-              imgUrl = imgUrl.split(',')[0];
-              console.log(imgUrl);
-            }
-            if (imgUrl) {
-              handleImageClick(imgUrl);  // 打开图片对话框
-            }
-          },
         },
         {
           title: "ID",
