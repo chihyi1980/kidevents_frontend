@@ -1,21 +1,21 @@
-import React from 'react';
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import "tabulator-tables/dist/css/tabulator_bootstrap5.min.css";
 import EventAddnewDialog from './events/event-add-new-dialog';
 import EventUpdateDialog from './events/event-update-dialog';
-import { Button, Dialog, DialogContent } from '@mui/material';
+import { Button, Dialog, DialogContent, TextField, CircularProgress, Box } from '@mui/material';
 import dayjs from 'dayjs';
 
 const EventsEdit = () => {
-
   const [eventDialog, setEventDialog] = useState({ open: false, options: null });
   const [eventUpdateDialog, setEventUpdateDialog] = useState({ open: false, options: null });
   const [locOptions, setLocOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [table, setTable] = useState(null);
-  const [imageDialog, setImageDialog] = useState({ open: false, imgUrl: '' });  // 管理图片对话框的状态
+  const [imageDialog, setImageDialog] = useState({ open: false, imgUrl: '' });
+  const [loading, setLoading] = useState(false); // 控制loading的狀態
+  const [urlInput, setUrlInput] = useState(""); // 控制輸入框內容
   const API_HOST = process.env.REACT_APP_API_HOST;
 
   const COLOR_LIST = ['#FDAB3D', '#FCCCFF', '#FFCB00', '#00C875', '#2B76E5', '#0086C0', '#E2445C', '#9CD326', '#5559DF', '#5797FC', '#037F4C', '#FF642E', '#C4C4C4', '#4ECCC6', '#CAB641'];
@@ -24,7 +24,6 @@ const EventsEdit = () => {
     if (table) {
       const response = await axios.get(`${API_HOST}/api/events/list`);
       table.setData(response.data);  // 重新加载表格数据
-      console.log('reload!');
     }
   };
 
@@ -33,33 +32,51 @@ const EventsEdit = () => {
   };
 
   const handleImageClick = (imgUrl) => {
-    setImageDialog({ open: true, imgUrl });  // 打开图片对话框
+    setImageDialog({ open: true, imgUrl });
   };
 
   const handleImageDialogClose = () => {
-    setImageDialog({ open: false, imgUrl: '' });  // 关闭图片对话框
+    setImageDialog({ open: false, imgUrl: '' });
   };
 
-  const handleOpenNewWindow = (value) =>{
-    window.open(value, "_blank");
-  }
+  // 新增的處理函數：用於處理 "ADD by URL" 按鈕點擊
+  const handleAddByUrl = async () => {
+    if (!urlInput.trim()) {
+      alert('URL 不能为空');
+      return;
+    }
+
+    const requestData = { url: urlInput };
+
+    try {
+      setLoading(true); // 顯示 loading 動畫
+      const response = await axios.post(`${API_HOST}/api/openai/create_by_url`, requestData);
+
+      if (response.status === 201) {
+        alert('新增成功! 別忘了 手動添加 地區 與 單位名稱!');
+        reloadTable(); // 刷新表格
+      } else {
+        alert('Error: ' + response.data.message);
+      }
+    } catch (error) {
+      alert('Error: ' + error.response?.data?.message || '發生錯誤');
+    } finally {
+      setLoading(false); // 隱藏 loading 動畫
+    }
+  };
 
   useEffect(() => {
     const initOptions = async () => {
       const loc_res = await axios.get(`${API_HOST}/api/loc/list`);
-      const loc_options = loc_res.data;
-      setLocOptions(loc_options);
+      setLocOptions(loc_res.data);
 
       const tag_res = await axios.get(`${API_HOST}/api/tag/list`);
-      const tag_options = tag_res.data;
-      setTagOptions(tag_options);
-
+      setTagOptions(tag_res.data);
     }
     initOptions();
   }, [])
 
   useEffect(() => {
-
     const initTable = async () => {
 
       const cellTextFormatter = (text, bgColor, color = '#FFFFFF') => {
@@ -422,31 +439,22 @@ const EventsEdit = () => {
 
       const table = new Tabulator("#example-table", {
         columns: cols,
-
-        // height: window.innerHeight * 0.90,
-        layoutColumnsOnNewData: true,
         layout: "fitDataFill",
-        // rowHeight: 40,
-
         pagination: "local",
         paginationSize: 100,
-        paginationSizeSelector: [100, 150, 200],
-        paginationCounter: "rows",
-
         ajaxURL: `${API_HOST}/api/events/list`,
       });
       setTable(table);
-
     }
     initTable();
-  }, [tagOptions])
+  }, [tagOptions]);
 
   return (
     <div>
       <h2>Events Edit</h2>
       <div style={{
         display: 'flex',
-        justifyContent: 'flex',
+        justifyContent: 'flex-start',
         padding: '20px',
         boxSizing: 'border-box',
         width: '100%'
@@ -483,19 +491,54 @@ const EventsEdit = () => {
             event_id={eventUpdateDialog.event_id}
           />
         )}
-
       </div>
+
+      {/* 新增 URL 文字輸入框和按鈕 */}
+      <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddByUrl}
+          disabled={loading} // 在loading期間禁用按鈕
+        >
+          ADD by URL
+        </Button>
+        <TextField
+          label="URL"
+          value={urlInput}
+          onChange={(e) => setUrlInput(e.target.value)}
+        />
+      </Box>
 
       <div id="example-table"></div>
 
-
+      {/* 圖片對話框 */}
       <Dialog open={imageDialog.open} onClose={handleImageDialogClose}>
         <DialogContent>
           <img src={imageDialog.imgUrl} alt="活動圖片" style={{ width: '100%' }} />
         </DialogContent>
       </Dialog>
 
-
+      {/* 加载中动画 */}
+      {loading && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 9999,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100vw',
+            height: '100vh',
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      )}
     </div>
   );
 };
